@@ -1,7 +1,7 @@
 /* eslint-disable react/react-in-jsx-scope */
+"use client";
 
 import Header from "./componenets/Header";
-
 
 export default function Home() {
   return (

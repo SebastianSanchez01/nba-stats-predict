@@ -1,8 +1,37 @@
 /* eslint-disable react/react-in-jsx-scope */
+"use client";
+
 import Link from "next/link";
 import { FaBasketballBall } from "react-icons/fa";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Header() {
+    const [searchQuery, setSearchQuery] = useState('');
+    const router = useRouter();
+
+    const handleSearch = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const trimmedQuery = searchQuery.trim();
+        if (!trimmedQuery) return;
+
+        try {
+            const response = await fetch(`/api/search?query=${encodeURIComponent(trimmedQuery)}`);
+            if (!response.ok) throw new Error('Search failed');
+
+            const data = await response.json();
+
+            if (data.length === 1) {
+                router.push(`/players/${data[0].id}`);
+            } else {
+                router.push('/not-found');
+            }
+        } catch (error) {
+            console.error("Search error:", error);
+            router.push('/not-found');
+        }
+    };
+
     return (
         <header className="flex items-center p-3">
             <div className="flex items-center gap-16">
@@ -13,7 +42,16 @@ export default function Header() {
                 </Link>
             </div>
             <div className="flex-grow flex justify-center">
-                <input type="text" placeholder="Search players and teams..." className="rounded-full text-center border border-black p-2 w-72 ml-24" />
+                <form onSubmit={handleSearch} className="flex">
+                    <input
+                        type="text"
+                        placeholder="Search players and teams..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="rounded-full text-center border border-black p-2 w-72 ml-24"
+                    />
+                    <button type="submit" className="hidden">Search</button>
+                </form>
             </div>
             <nav className="flex gap-6 items-center">
                 <Link href={"/"}>Sign in</Link>
@@ -22,3 +60,6 @@ export default function Header() {
         </header>
     );
 }
+
+
+
