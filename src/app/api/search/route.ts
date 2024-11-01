@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { connectToDatabase } from "../../../../lib/mongodb";
 
 export async function GET(request: Request) {
@@ -7,17 +8,31 @@ export async function GET(request: Request) {
 
   try {
     const db = await connectToDatabase();
-    const players = await db
-      .collection("Player")
-      .find({
-        $or: [
-          { firstname: { $regex: query, $options: "i" } },
-          { lastname: { $regex: query, $options: "i" } },
-          { college: { $regex: query, $options: "i" } },
-        ],
-      })
-      .toArray();
 
+    const searchTerms = query.trim().split(" ");
+    const firstName = searchTerms[0];
+    const lastName = searchTerms.length > 1 ? searchTerms[1] : null;
+
+    let mongoQuery: any;
+
+    if (lastName) {
+      mongoQuery = {
+        $and: [
+          { firstname: { $regex: new RegExp(firstName, "i") } },
+          { lastname: { $regex: new RegExp(lastName, "i") } },
+        ],
+      };
+    } else {
+      mongoQuery = {
+        $or: [
+          { firstname: { $regex: new RegExp(firstName, "i") } },
+          { lastname: { $regex: new RegExp(firstName, "i") } },
+          { college: { $regex: new RegExp(firstName, "i") } },
+        ],
+      };
+    }
+
+    const players = await db.collection("Player").find(mongoQuery).toArray();
     console.log("Players found:", players);
 
     return new Response(JSON.stringify(players), { status: 200 });
