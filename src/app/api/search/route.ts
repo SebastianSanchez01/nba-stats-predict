@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { connectToDatabase } from "../../../../lib/mongodb";
 
@@ -13,17 +14,18 @@ export async function GET(request: Request) {
     const firstName = searchTerms[0];
     const lastName = searchTerms.length > 1 ? searchTerms[1] : null;
 
-    let mongoQuery: any;
+    let playerQuery: any;
+    let teamQuery: any;
 
     if (lastName) {
-      mongoQuery = {
+      playerQuery = {
         $and: [
           { firstname: { $regex: new RegExp(firstName, "i") } },
           { lastname: { $regex: new RegExp(lastName, "i") } },
         ],
       };
     } else {
-      mongoQuery = {
+      playerQuery = {
         $or: [
           { firstname: { $regex: new RegExp(firstName, "i") } },
           { lastname: { $regex: new RegExp(firstName, "i") } },
@@ -32,14 +34,45 @@ export async function GET(request: Request) {
       };
     }
 
-    const players = await db.collection("Player").find(mongoQuery).toArray();
-    console.log("Players found:", players);
+    teamQuery = {
+      $or: [
+        { name: { $regex: new RegExp(query, "i") } },
+        { code: { $regex: new RegExp(query, "i") } },
+        { city: { $regex: new RegExp(query, "i") } },
+      ],
+    };
 
-    return new Response(JSON.stringify(players), { status: 200 });
+    const players = await db.collection("Player").find(playerQuery).toArray();
+    const teams = await db.collection("Team").find(teamQuery).toArray();
+
+    const playerResults = players.map((player: any) => ({
+      type: "player",
+      id: player.id,
+      firstname: player.firstname,
+      lastname: player.lastname,
+      college: player.college,
+    }));
+
+    const teamResults = teams.map((team: any) => ({
+      type: "team",
+      id: team.id,
+      name: team.name,
+      code: team.code,
+      city: team.city,
+      logo: team.logo,
+    }));
+
+    const results = [...playerResults, ...teamResults];
+    console.log("Search results:", results);
+
+    return new Response(JSON.stringify(results), { status: 200 });
   } catch (error) {
-    console.error("Error fetching players:", error);
-    return new Response(JSON.stringify({ error: "Failed to fetch players" }), {
-      status: 500,
-    });
+    console.error("Error fetching search results:", error);
+    return new Response(
+      JSON.stringify({ error: "Failed to fetch search results" }),
+      {
+        status: 500,
+      }
+    );
   }
 }

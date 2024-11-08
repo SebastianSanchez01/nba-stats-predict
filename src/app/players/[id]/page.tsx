@@ -1,6 +1,6 @@
 /* eslint-disable react/react-in-jsx-scope */
-import { MongoClient, ObjectId } from 'mongodb';
-import Header from "../../componenets/Header";
+import { MongoClient, ObjectId, Document, WithId } from 'mongodb';
+import PlayerPage from "./PlayerPage";
 
 interface Player {
     _id: ObjectId;
@@ -10,17 +10,38 @@ interface Player {
     college: string;
 }
 
-async function getPlayerData(id: string): Promise<Player | null> {
+interface GameStats {
+    points: number;
+    pos: string;
+    min: string;
+    fgm: number;
+    fga: number;
+    fgp: string;
+    ftm: number;
+    fta: number;
+    ftp: string;
+    tpm: number;
+    tpa: number;
+    tpp: string;
+    offReb: number;
+    defReb: number;
+    totReb: number;
+    assists: number;
+    fouls: number;
+    steals: number;
+    turnovers: number;
+    blocks: number;
+    plusMinus: string;
+    comment: string | null;
+}
+
+export async function getPlayerData(id: string): Promise<Player | null> {
     const client = await MongoClient.connect(process.env.MONGODB_URI || '');
     const db = client.db('NbaDB');
 
     try {
-        console.log('Querying Player with id:', id);
         const numericId = Number(id);
         const playerDoc = await db.collection('Player').findOne({ id: numericId });
-
-        console.log('Player Document:', playerDoc);
-
         if (!playerDoc) return null;
 
         return {
@@ -38,22 +59,53 @@ async function getPlayerData(id: string): Promise<Player | null> {
     }
 }
 
-export default async function PlayerPage({ params }: { params: { id: string } }) {
-    const player = await getPlayerData(params.id);
+export async function getPlayerStats(id: string): Promise<GameStats[] | null> {
+    const client = await MongoClient.connect(process.env.MONGODB_URI || '');
+    const db = client.db('NbaDB');
 
-    if (!player) {
-        return <p>Player not found</p>;
+    try {
+        const numericId = Number(id);
+        const statsDocs = await db.collection('Player_Statistics')
+            .find({ playerID: numericId })
+            .toArray();
+
+        const stats: GameStats[] = statsDocs.map((doc: WithId<Document>) => ({
+            points: doc.points,
+            pos: doc.pos,
+            min: doc.min,
+            fgm: doc.fgm,
+            fga: doc.fga,
+            fgp: doc.fgp,
+            ftm: doc.ftm,
+            fta: doc.fta,
+            ftp: doc.ftp,
+            tpm: doc.tpm,
+            tpa: doc.tpa,
+            tpp: doc.tpp,
+            offReb: doc.offReb,
+            defReb: doc.defReb,
+            totReb: doc.totReb,
+            assists: doc.assists,
+            fouls: doc.fouls,
+            steals: doc.steals,
+            turnovers: doc.turnovers,
+            blocks: doc.blocks,
+            plusMinus: doc.plusMinus,
+            comment: doc.comment,
+        }));
+
+        return stats;
+    } catch (error) {
+        console.error("Error fetching player stats:", error);
+        return null;
+    } finally {
+        client.close();
     }
-
-    return (
-        <main className="container">
-            <Header />
-            <h1 className="text-4xl font-bold mb-4 text-center mt-20">
-                {player.firstname} {player.lastname}
-                <p>College: {player.college}</p>
-            </h1>
-        </main>
-    );
 }
+
+export default function PageWrapper({ params }: { params: { id: string } }) {
+    return <PlayerPage params={params} />;
+}
+
 
 

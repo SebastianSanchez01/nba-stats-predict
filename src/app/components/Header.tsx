@@ -22,7 +22,12 @@ export default function Header() {
             const data = await response.json();
 
             if (data.length === 1) {
-                router.push(`/players/${data[0].id}`);
+                const result = data[0];
+                if (result.type === 'player') {
+                    router.push(`/players/${result.id}`);
+                } else if (result.type === 'team') {
+                    router.push(`/teams/${result.id}`);
+                }
             } else {
                 router.push('/not-found');
             }
