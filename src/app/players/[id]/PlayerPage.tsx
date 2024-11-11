@@ -1,6 +1,6 @@
 /* eslint-disable react/react-in-jsx-scope */
 import Header from "../../components/Header";
-import { getPlayerData, getPlayerStats } from "./page"; 
+import { getPlayerData, getPlayerStats } from "./page";
 
 export default async function PlayerPage({ params }: { params: { id: string } }) {
     const player = await getPlayerData(params.id);
@@ -10,6 +10,8 @@ export default async function PlayerPage({ params }: { params: { id: string } })
         return <p>Player not found</p>;
     }
 
+    const sortedStats = stats ? [...stats].reverse() : [];
+
     return (
         <main className="container">
             <Header />
@@ -18,12 +20,11 @@ export default async function PlayerPage({ params }: { params: { id: string } })
             </h1>
             <p>College: {player.college}</p>
 
-            {stats && stats.length > 0 ? (
+            {sortedStats && sortedStats.length > 0 ? (
                 <table className="table-auto w-full mt-8 text-center">
                     <thead>
                         <tr>
                             <th>Points</th>
-                            <th>Position</th>
                             <th>Minutes</th>
                             <th>FGM</th>
                             <th>FGA</th>
@@ -35,10 +36,9 @@ export default async function PlayerPage({ params }: { params: { id: string } })
                         </tr>
                     </thead>
                     <tbody>
-                        {stats.map((game, index) => (
+                        {sortedStats.map((game, index) => (
                             <tr key={index}>
                                 <td>{game.points}</td>
-                                <td>{game.pos}</td>
                                 <td>{game.min}</td>
                                 <td>{game.fgm}</td>
                                 <td>{game.fga}</td>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { FaBasketballBall } from "react-icons/fa";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { SiBetfair } from "react-icons/si";
 
 export default function Header() {
     const [searchQuery, setSearchQuery] = useState('');
@@ -39,12 +40,18 @@ export default function Header() {
 
     return (
         <header className="flex items-center p-3">
-            <div className="flex items-center gap-16">
+            <div className="flex items-center gap-8">
                 <Link href={"/"} className="font-bold text-xl flex gap-0.5 items-center text-orange-600">
                     <FaBasketballBall size={20} />
                     <span className="text-blue-600">NBA</span>
                     <span className="text-red-600">Wise</span>
                 </Link>
+                <nav className="flex gap-4">
+                    <Link href={"/"} className="font-bold flex items-center">
+                        <span className="">Projections</span>
+                        <SiBetfair size={20} />
+                    </Link>
+                </nav>
             </div>
             <div className="flex-grow flex justify-center">
                 <form onSubmit={handleSearch} className="flex">
@@ -53,7 +60,7 @@ export default function Header() {
                         placeholder="Search players and teams..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="rounded-full text-center border border-black p-2 w-72 ml-24"
+                        className="rounded-full text-center border border-black p-2 w-72 mr-12"
                     />
                     <button type="submit" className="hidden">Search</button>
                 </form>
