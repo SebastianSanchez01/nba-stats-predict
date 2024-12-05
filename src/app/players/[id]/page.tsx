@@ -86,7 +86,7 @@ export async function getPlayerStats(id: string): Promise<GameStats[] | null> {
             defReb: doc.defReb,
             totReb: doc.totReb,
             assists: doc.assists,
-            fouls: doc.fouls,
+            fouls: doc.pFouls,
             steals: doc.steals,
             turnovers: doc.turnovers,
             blocks: doc.blocks,

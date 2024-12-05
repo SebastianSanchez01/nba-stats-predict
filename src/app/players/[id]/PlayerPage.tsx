@@ -1,5 +1,6 @@
 /* eslint-disable react/react-in-jsx-scope */
 import Header from "../../components/Header";
+import Link from "next/link";
 import { getPlayerData, getPlayerStats } from "./page";
 
 export default async function PlayerPage({ params }: { params: { id: string } }) {
@@ -29,11 +30,18 @@ export default async function PlayerPage({ params }: { params: { id: string } })
                             <th>FGM</th>
                             <th>FGA</th>
                             <th>FG%</th>
+                            <th>FTM</th>
+                            <th>FTA</th>
+                            <th>FTP</th>
+                            <th>offReb</th>
+                            <th>defReb</th>
+                            <th>totReb</th>
                             <th>Assists</th>
-                            <th>Rebounds</th>
                             <th>Steals</th>
                             <th>Blocks</th>
-                        </tr>
+                            <th>Fouls</th>
+                            <th>Turnovers</th>
+                         </tr>
                     </thead>
                     <tbody>
                         {sortedStats.map((game, index) => (
@@ -43,10 +51,17 @@ export default async function PlayerPage({ params }: { params: { id: string } })
                                 <td>{game.fgm}</td>
                                 <td>{game.fga}</td>
                                 <td>{game.fgp}</td>
-                                <td>{game.assists}</td>
+                                <td>{game.ftm}</td>
+                                <td>{game.fta}</td>
+                                <td>{game.ftp}</td>
+                                <td>{game.offReb}</td>
+                                <td>{game.defReb}</td>
                                 <td>{game.totReb}</td>
+                                <td>{game.assists}</td>
                                 <td>{game.steals}</td>
                                 <td>{game.blocks}</td>
+                                <td>{game.fouls}</td>
+                                <td>{game.turnovers}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -54,6 +69,14 @@ export default async function PlayerPage({ params }: { params: { id: string } })
             ) : (
                 <p>No stats available for this player.</p>
             )}
+
+            <div className="mt-8 text-center">
+                <Link href={`/players/${params.id}/predict`}>
+                    <button className="px-6 py-2 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-600">
+                        Predict a Statistic For Betting
+                    </button>
+                </Link>
+            </div>
         </main>
     );
 }
