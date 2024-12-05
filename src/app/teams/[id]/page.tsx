@@ -50,7 +50,15 @@ export async function getTeamData(id: string): Promise<Team | null> {
 
     try {
         const numericId = Number(id);
-        const teamDoc = await db.collection('Team').findOne({ id: numericId });
+        console.log('Searching for team with ID:', numericId); 
+        
+        let teamDoc = await db.collection('Team').findOne({ id: numericId });
+        if (!teamDoc) {
+            teamDoc = await db.collection('teams').findOne({ id: numericId });
+        }
+        
+        console.log('Found team:', teamDoc); 
+        
         if (!teamDoc) return null;
 
         return {
