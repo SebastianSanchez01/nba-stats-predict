@@ -1,6 +1,7 @@
 /* eslint-disable react/react-in-jsx-scope */
 import Header from "../../components/Header";
 import { getTeamData, getTeamStats } from "./page";
+import Link from 'next/link';
 
 export default async function TeamPage({ params }: { params: { id: string } }) {
     const team = await getTeamData(params.id);
@@ -24,41 +25,32 @@ export default async function TeamPage({ params }: { params: { id: string } }) {
                     <thead>
                         <tr>
                             <th>Games</th>
+                            <th>Fast Break Points</th>
+                            <th>Points In Paint</th>
+                            <th>Biggest Lead</th>
+                            <th>Second Chance Points</th>
+                            <th>Points Off Turnovers</th>
                             <th>Points</th>
-                            <th>Fga</th>
-                            <th>Fgm</th>
-                            <th>Fgp</th>
                             <th>Assists</th>
-                            <th>offReb</th>
-                            <th>defReb</th>
-                            <th>totReb</th>
+                            <th>Rebounds</th>
                             <th>Steals</th>
                             <th>Blocks</th>
-                            <th>Turnovers</th>
-                            <th>+/-</th>
-
-
-
-
-                             
                         </tr>
                     </thead>
                     <tbody>
                         {stats.map((stat, index) => (
                             <tr key={index}>
                                 <td>{stat.games}</td>
+                                <td>{stat.fastBreakPoints}</td>
+                                <td>{stat.pointsInPaint}</td>
+                                <td>{stat.biggestLead}</td>
+                                <td>{stat.secondChancePoints}</td>
+                                <td>{stat.pointsOffTurnovers}</td>
                                 <td>{stat.points}</td>
-                                <td>{stat.fga}</td>
-                                <td>{stat.fgm}</td>
-                                <td>{stat.fgp}</td>
                                 <td>{stat.assists}</td>
-                                <td>{stat.offReb}</td>
-                                <td>{stat.defReb}</td>
                                 <td>{stat.totReb}</td>
                                 <td>{stat.steals}</td>
                                 <td>{stat.blocks}</td>
-                                <td>{stat.turnovers}</td>
-                                <td>{stat.plusMinus}</td>
                             </tr>
                         ))}
                     </tbody>
