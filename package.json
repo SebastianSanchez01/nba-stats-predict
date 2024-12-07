@@ -12,7 +12,7 @@
     "dbsproject": "file:",
     "mongodb": "^6.10.0",
     "mongoose": "^8.7.3",
-    "next": "14.2.15",
+    "next": "15.0.4",
     "node-fetch": "^3.3.2",
     "react": "^18",
     "react-dom": "^18",

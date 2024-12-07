@@ -14,68 +14,82 @@ export default async function PlayerPage({ params }: { params: { id: string } })
     const sortedStats = stats ? [...stats].reverse() : [];
 
     return (
-        <main className="container">
+        <main className="min-h-screen bg-gray-50">
             <Header />
-            <h1 className="text-4xl font-bold mb-4 text-center mt-20">
-                {player.firstname} {player.lastname}
-            </h1>
-            <p>College: {player.college}</p>
+            <div className="container mx-auto px-4 py-8">
+                <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+                    <h1 className="text-4xl font-bold text-center text-gray-800 mb-2">
+                        {player.firstname} {player.lastname}
+                    </h1>
+                    <p className="text-center text-gray-600 mb-4">
+                        College: {player.college}
+                    </p>
+                </div>
 
-            {sortedStats && sortedStats.length > 0 ? (
-                <table className="table-auto w-full mt-8 text-center">
-                    <thead>
-                        <tr>
-                            <th>Points</th>
-                            <th>Minutes</th>
-                            <th>FGM</th>
-                            <th>FGA</th>
-                            <th>FG%</th>
-                            <th>FTM</th>
-                            <th>FTA</th>
-                            <th>FTP</th>
-                            <th>offReb</th>
-                            <th>defReb</th>
-                            <th>totReb</th>
-                            <th>Assists</th>
-                            <th>Steals</th>
-                            <th>Blocks</th>
-                            <th>Fouls</th>
-                            <th>Turnovers</th>
-                         </tr>
-                    </thead>
-                    <tbody>
-                        {sortedStats.map((game, index) => (
-                            <tr key={index}>
-                                <td>{game.points}</td>
-                                <td>{game.min}</td>
-                                <td>{game.fgm}</td>
-                                <td>{game.fga}</td>
-                                <td>{game.fgp}</td>
-                                <td>{game.ftm}</td>
-                                <td>{game.fta}</td>
-                                <td>{game.ftp}</td>
-                                <td>{game.offReb}</td>
-                                <td>{game.defReb}</td>
-                                <td>{game.totReb}</td>
-                                <td>{game.assists}</td>
-                                <td>{game.steals}</td>
-                                <td>{game.blocks}</td>
-                                <td>{game.fouls}</td>
-                                <td>{game.turnovers}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            ) : (
-                <p>No stats available for this player.</p>
-            )}
+                {sortedStats && sortedStats.length > 0 ? (
+                    <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full table-auto">
+                                <thead className="bg-blue-500 text-white">
+                                    <tr>
+                                        <th className="px-4 py-3">Points</th>
+                                        <th className="px-4 py-3">Minutes</th>
+                                        <th className="px-4 py-3">FGM</th>
+                                        <th className="px-4 py-3">FGA</th>
+                                        <th className="px-4 py-3">FG%</th>
+                                        <th className="px-4 py-3">FTM</th>
+                                        <th className="px-4 py-3">FTA</th>
+                                        <th className="px-4 py-3">FT%</th>
+                                        <th className="px-4 py-3">OReb</th>
+                                        <th className="px-4 py-3">DReb</th>
+                                        <th className="px-4 py-3">TReb</th>
+                                        <th className="px-4 py-3">Ast</th>
+                                        <th className="px-4 py-3">Stl</th>
+                                        <th className="px-4 py-3">Blk</th>
+                                        <th className="px-4 py-3">Fouls</th>
+                                        <th className="px-4 py-3">TO</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                    {sortedStats.map((game, index) => (
+                                        <tr key={index} className="hover:bg-gray-50">
+                                            <td className="px-4 py-3 text-center font-semibold">{game.points}</td>
+                                            <td className="px-4 py-3 text-center">{game.min}</td>
+                                            <td className="px-4 py-3 text-center">{game.fgm}</td>
+                                            <td className="px-4 py-3 text-center">{game.fga}</td>
+                                            <td className="px-4 py-3 text-center">{game.fgp}%</td>
+                                            <td className="px-4 py-3 text-center">{game.ftm}</td>
+                                            <td className="px-4 py-3 text-center">{game.fta}</td>
+                                            <td className="px-4 py-3 text-center">{game.ftp}%</td>
+                                            <td className="px-4 py-3 text-center">{game.offReb}</td>
+                                            <td className="px-4 py-3 text-center">{game.defReb}</td>
+                                            <td className="px-4 py-3 text-center">{game.totReb}</td>
+                                            <td className="px-4 py-3 text-center">{game.assists}</td>
+                                            <td className="px-4 py-3 text-center">{game.steals}</td>
+                                            <td className="px-4 py-3 text-center">{game.blocks}</td>
+                                            <td className="px-4 py-3 text-center">{game.fouls}</td>
+                                            <td className="px-4 py-3 text-center">{game.turnovers}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="bg-white rounded-lg shadow-lg p-6 text-center text-gray-600">
+                        No stats available for this player.
+                    </div>
+                )}
 
-            <div className="mt-8 text-center">
-                <Link href={`/players/${params.id}/predict`}>
-                    <button className="px-6 py-2 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-600">
-                        Predict a Statistic For Betting
-                    </button>
-                </Link>
+                <div className="mt-8 text-center">
+                    <Link href={`/players/${params.id}/predict`}>
+                        <button className="px-8 py-3 bg-blue-500 text-white font-semibold rounded-lg 
+                                         hover:bg-blue-600 transform hover:scale-105 transition-all duration-200 
+                                         shadow-md hover:shadow-lg">
+                            Predict a Statistic For Betting
+                        </button>
+                    </Link>
+                </div>
             </div>
         </main>
     );
