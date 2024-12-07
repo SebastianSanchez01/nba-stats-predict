@@ -1,5 +1,95 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from "../../../../../lib/mongodb";
+
+// Probability Calculator Class
+class PlayerStatProbabilityCalculator {
+    calculateProbability(params: PlayerStatProbabilityParams): number {
+      const {
+        spread,
+        choice,
+        opposingTeamPlusMinus,
+        lastFiveGames
+      } = params;
+
+      // Calculate basic statistics
+      const mean = this.calculateMean(lastFiveGames);
+      const standardDeviation = this.calculateStandardDeviation(lastFiveGames, mean);
+      
+      // Adjust probability based on opposing team's defensive rating
+      const defensiveAdjustment = this.calculateDefensiveAdjustment(opposingTeamPlusMinus);
+      
+      // Calculate z-score
+      const zScore = this.calculateZScore(spread, mean, standardDeviation, defensiveAdjustment);
+      
+      // Calculate probability using standard normal distribution
+      const probability = this.calculateNormalDistributionProbability(zScore, choice);
+      
+      // Ensure probability is within 0-100 range
+      return Math.max(0, Math.min(100, probability));
+    }
+  
+    private calculateMean(values: number[]): number {
+      return values.reduce((sum, value) => sum + value, 0) / values.length;
+    }
+  
+    private calculateStandardDeviation(values: number[], mean: number): number {
+      const variance = values.reduce((sum, value) => sum + Math.pow(value - mean, 2), 0) / values.length;
+      return Math.sqrt(variance);
+    }
+  
+    private calculateDefensiveAdjustment(opposingTeamPlusMinus: number): number {
+      const adjustment = -opposingTeamPlusMinus / 400;
+      return Math.max(-0.5, Math.min(0.5, adjustment));
+    }
+  
+    private calculateZScore(
+      spread: number, 
+      mean: number, 
+      standardDeviation: number,
+      defensiveAdjustment: number
+    ): number {
+      const adjustedMean = mean * (1 + defensiveAdjustment);
+      return (spread - adjustedMean) / standardDeviation;
+    }
+  
+    private calculateNormalDistributionProbability(zScore: number, choice: 'over' | 'under'): number {
+      const cumulativeProbability = this.normalCumulativeProbability(zScore);
+      
+      return choice === 'over' 
+        ? (1 - cumulativeProbability) * 100 
+        : cumulativeProbability * 100;
+    }
+  
+    private normalCumulativeProbability(z: number): number {
+      const b1 = 0.319381530;
+      const b2 = -0.356563782;
+      const b3 = 1.781477937;
+      const b4 = -1.821255978;
+      const b5 = 1.330274429;
+      const p = 0.2316419;
+      
+      const sign = z < 0 ? -1 : 1;
+      const absZ = Math.abs(z);
+      
+      const t = 1 / (1 + p * absZ);
+      const series = t * (b1 + t * (b2 + t * (b3 + t * (b4 + t * b5))));
+      
+      return sign > 0 
+        ? 1 - (1 / Math.sqrt(2 * Math.PI)) * Math.exp(-z * z / 2) * series 
+        : 1 - this.normalCumulativeProbability(-z);
+    }
+  }
+  
+  // TypeScript Interfaces
+  interface PlayerStatProbabilityParams {
+    statistic: 'points' | 'assists' | 'rebounds' | 'blocks' | 'turnovers';
+    spread: number;
+    choice: 'over' | 'under';
+    opposingTeamPlusMinus: number;
+    lastFiveGames: number[];
+  }
+  
+
 export async function POST(req: Request) {
     try {
         const body = await req.json();
@@ -12,18 +102,21 @@ export async function POST(req: Request) {
 
         const db = await connectToDatabase();
 
-        // Fetch the last 10 game stats for the player
+        // Fetch the last 5 game stats for the player
         const playerStats = await db
             .collection('Player_Statistics')
             .find({ playerID: playerID})
             .sort({['_id'] : -1})
-            .limit(10)
+            .limit(5)
             .toArray();
 
         if (!playerStats.length) {
             console.log('i made it here');
             return NextResponse.json({ error: 'No game statistics found for this player' }, { status: 404 });
         }
+
+        const lastFiveGames = playerStats.map(stat => stat[statistic]).slice(0, 5);
+
 
         // Fetch the opposing team's season stats
         const opposingTeamStats = await db
@@ -36,55 +129,26 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Opposing team statistics not found' }, { status: 404 });
         }
 
-        // Calculate weights for the last 10 games (e.g., more recent games have higher weight)
-        const weights = playerStats.map((_, index) => 1 - index * 0.01); // Decreasing weights
-        const normalizedWeights = weights.map(w => w / weights.reduce((a, b) => a + b, 0)); // Normalize to sum 1
-
-        // Calculate weighted average for the selected statistic
-        const weightedStatSum = playerStats.reduce((sum, game, index) => {
-            console.log(game[statistic]);
-            return sum + game[statistic] * normalizedWeights[index];
-        }, 0);
-
-        // Incorporate opposing team's season stats
-        const opposingTeamStat = opposingTeamStats.plusMinus * 0.01; // Example: points allowed
-        const finalValue = weightedStatSum - opposingTeamStat + (choice === 'over' ? spread : -spread);
-
-        // Apply activation function (e.g., sigmoid or ReLU)
-        const sigmoid = (x: number) => 1 / (1 + Math.exp(-x));
-        const probability = sigmoid(finalValue);
-/*
-        // Improved weighting scheme using exponential decay
-        const decayFactor = 0.1; // Adjust for how quickly weights decrease
-        const weights = playerStats.map((_, index) => Math.exp(-decayFactor * index));
-        const normalizedWeights = weights.map(w => w / weights.reduce((a, b) => a + b, 0));
-
-        // Calculate weighted average for the selected statistic
-        const weightedStatSum = playerStats.reduce((sum, game, index) => {
-            return sum + game[statistic] * normalizedWeights[index];
-        }, 0);
-
-        // Incorporate opposing team's defensive stats more meaningfully
-        const opposingTeamDefenseEffect = opposingTeamStats.plusMinus / 100; // Scale appropriately
-        const scaledSpread = spread / 10; // Scale spread to match the range of other inputs
-
-        // Final value calculation with better scaling
-        const finalValue = weightedStatSum - opposingTeamDefenseEffect + (choice === 'over' ? scaledSpread : -scaledSpread);
-
-        // Apply sigmoid function with optional scaling to prevent extreme outputs
-        const sigmoid = (x: number) => 1 / (1 + Math.exp(-x));
-        const scaledFinalValue = Math.max(-6, Math.min(finalValue, 6)); // Clip values to [-6, 6] to avoid saturation
-        const probability = sigmoid(scaledFinalValue);
-*/
-
+                // Calculate probability
+        const probabilityCalculator = new PlayerStatProbabilityCalculator();
+        const probability = probabilityCalculator.calculateProbability({
+            statistic,
+            spread,
+            choice,
+            opposingTeamPlusMinus: opposingTeamStats.plusMinus || 0,
+            lastFiveGames
+        });
+        
+        
 
         return NextResponse.json({
             playerID,
             statistic,
             spread,
             choice,
-            probability,
+            probability: (probability / 100),
         });
+
     } catch (error) {
         console.error('Error in prediction route:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

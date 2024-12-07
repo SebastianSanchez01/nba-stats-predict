@@ -5,7 +5,7 @@ import React, { useState } from "react";
 
 export default function StatPredictionForm({ playerID }: { playerID: number }) {
     const [statistic, setStatistic] = useState("points");
-    const [opposingTeamID, setOpposingTeamID] = useState("");
+    const [opposingTeamID, setOpposingTeamID] = useState("1");
     const [spread, setSpread] = useState("");
     const [choice, setChoice] = useState<"over" | "under" | null>(null);
     
