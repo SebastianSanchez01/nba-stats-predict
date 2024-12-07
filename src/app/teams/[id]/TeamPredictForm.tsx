@@ -17,6 +17,39 @@ export default function TeamPredictForm({ currentTeamId }: { currentTeamId: stri
     const [opposingTeam, setOpposingTeam] = useState<Team | null>(null);
     const [opposingTeamID, setOpposingTeamID] = useState('');
 
+    const handlePrediction = async () => {
+        console.log('i made it here');
+        if (!currentTeamId || !opposingTeamID) {
+            alert('Both teams must be selected for prediction.');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/predictions/team', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    currentTeamId,
+                    opposingTeamId: opposingTeamID,
+                    currentTeamName: currentTeam?.name,
+                    opposingTeamName: opposingTeam?.name
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch prediction');
+            }
+
+            const predictionData = await response.json();
+            alert(`Prediction: ${predictionData.message}`);
+        } catch (error) {
+            console.error('Error making prediction:', error);
+            alert('An error occurred while generating the prediction. Please try again.');
+        } 
+    };
+
     useEffect(() => {
         const fetchCurrentTeam = async () => {
             try {
@@ -146,6 +179,8 @@ export default function TeamPredictForm({ currentTeamId }: { currentTeamId: stri
                                          focus:ring-blue-500 focus:ring-offset-2"
                                 onClick={() => {
                                     console.log('Making prediction for teams:', currentTeamId, opposingTeamID);
+                                    handlePrediction();
+
                                 }}
                             >
                                 Generate Prediction
