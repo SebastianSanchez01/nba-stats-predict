@@ -1,3 +1,8 @@
+# NBA Statistics Prediction
+
+This application is an NBA statistics and betting prediction platform that helps users make informed decisions about player and team performance predictions. This application is intended to aid in the use of the various NBA sports betting platforms. The NBA APIs we leverage already provide a good amount of statistics that can be used for analysis which can be used to provide more detailed decisions. The key components in our project include a prediction generation system, player statistics tracking, team performance analysis, a user-friendly search interface, and interactive betting prediction forms.
+The frontend web interface and application logic in the app are built using Next.js 14 and TypeScript. The interaction between the front-end and back-end database is implemented through Next.js API routes backed by Firebase. The front end handles user input validation, data formatting, and feedback while more complex calculations and database operations are performed on the backend.
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
